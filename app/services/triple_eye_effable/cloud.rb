@@ -1,5 +1,20 @@
+require 'httparty'
+
 module TripleEyeEffable
   class Cloud
+    # Includes
+    include HTTParty
+
+    # HTTP response constants
+    RESPONSE_KEYS = %i(
+      content_url
+      content_download_url
+      content_iiif_url
+      content_preview_url
+      content_thumbnail_url
+      content_type
+      uuid
+    )
 
     def initialize
       @api_key = TripleEyeEffable.config.api_key
@@ -8,21 +23,21 @@ module TripleEyeEffable
     end
 
     def create_resource(resourceable)
-      response = HTTParty.post(base_url, body: request_body(resourceable), headers: headers)
+      response = self.class.post(base_url, body: request_body(resourceable), headers: headers)
       resource_id, = parse_response(response)
       create_description resourceable, resource_id
     end
 
     def delete_resource(resourceable)
       id = resourceable.resource_description.resource_id
-      HTTParty.delete("#{base_url}/#{id}", headers: headers)
+      self.class.delete("#{base_url}/#{id}", headers: headers)
     end
 
     def load_resource(resourceable)
       return if resourceable.resource_description.nil?
 
       resource_description = resourceable.resource_description
-      response = HTTParty.get("#{base_url}/#{resource_description.resource_id}")
+      response = self.class.get("#{base_url}/#{resource_description.resource_id}")
       resource_id, data = parse_response(response)
 
       data&.keys.each do |key|
@@ -33,7 +48,7 @@ module TripleEyeEffable
 
     def update_resource(resourceable)
       id = resourceable.resource_description.resource_id
-      HTTParty.put("#{base_url}/#{id}", body: request_body(resourceable), headers: headers)
+      self.class.put("#{base_url}/#{id}", body: request_body(resourceable), headers: headers)
     end
 
     private
@@ -51,17 +66,7 @@ module TripleEyeEffable
     end
 
     def parse_response(response)
-      data = response['resource']
-               .symbolize_keys
-               .slice(
-                 :content_url,
-                 :content_download_url,
-                 :content_iiif_url,
-                 :content_preview_url,
-                 :content_thumbnail_url,
-                 :uuid
-               )
-
+      data = response['resource'].symbolize_keys.slice(*RESPONSE_KEYS)
       [data[:uuid], data.except(:uuid)]
     end
 

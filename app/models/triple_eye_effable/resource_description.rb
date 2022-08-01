@@ -6,6 +6,7 @@ module TripleEyeEffable
     attr_accessor :content_iiif_url
     attr_accessor :content_preview_url
     attr_accessor :content_thumbnail_url
+    attr_accessor :content_type
 
     # Validations
     validates :resource_id, presence: true

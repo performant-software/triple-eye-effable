@@ -13,6 +13,7 @@ module TripleEyeEffable
       content_preview_url
       content_thumbnail_url
       content_type
+      manifest
       uuid
     )
 

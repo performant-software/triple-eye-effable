@@ -16,6 +16,7 @@ module TripleEyeEffable
       delegate :content_preview_url, to: :resource_description, allow_nil: true
       delegate :content_thumbnail_url, to: :resource_description, allow_nil: true
       delegate :content_type, to: :resource_description, allow_nil: true
+      delegate :manifest, to: :resource_description, allow_nil: true
 
       # Callbacks
       after_find :load_resource

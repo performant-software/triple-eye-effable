@@ -30,6 +30,8 @@ module TripleEyeEffable
     end
 
     def delete_resource(resourceable)
+      return if resourceable.resource_description.nil?
+
       id = resourceable.resource_description.resource_id
       self.class.delete("#{base_url}/#{id}", headers: headers)
     end

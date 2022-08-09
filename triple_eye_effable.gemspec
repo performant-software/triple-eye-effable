@@ -15,5 +15,5 @@ Gem::Specification.new do |spec|
   end
 
   spec.add_dependency 'rails', '>= 6.0.3.2', '< 8'
-  spec.add_dependency 'httparty', '~> 0.17.3'
+  spec.add_dependency 'httparty', '~> 0.20.0'
 end

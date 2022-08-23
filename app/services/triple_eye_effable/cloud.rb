@@ -43,7 +43,7 @@ module TripleEyeEffable
       response = self.class.get("#{base_url}/#{resource_description.resource_id}")
       resource_id, data = parse_response(response)
 
-      data&.keys.each do |key|
+      data&.keys&.each do |key|
         next unless resource_description.respond_to?("#{key.to_s}=")
         resource_description.send("#{key.to_s}=", data[key])
       end
@@ -69,6 +69,8 @@ module TripleEyeEffable
     end
 
     def parse_response(response)
+      return nil unless response && response['resource'].present?
+
       data = response['resource'].symbolize_keys.slice(*RESPONSE_KEYS)
       [data[:uuid], data.except(:uuid)]
     end

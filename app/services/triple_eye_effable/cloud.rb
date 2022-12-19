@@ -89,7 +89,7 @@ module TripleEyeEffable
     end
 
     def request_body(resourceable)
-      name = resourceable.name if resourceable.respond_to?(:name)
+      name = resourceable.name.force_encoding(Encoding::ASCII_8BIT) if resourceable.respond_to?(:name)
       content = resourceable.content if resourceable.respond_to?(:content)
       content_remove = resourceable.content_remove if resourceable.respond_to?(:content_remove)
       metadata = resourceable.metadata if resourceable.respond_to?(:metadata)
@@ -103,7 +103,11 @@ module TripleEyeEffable
       }
 
       # Only send content if it's being changed
-      body[:resource][:content] = content if content.present?
+      if content.present?
+        # handle unicode in original_filename
+        content.original_filename = content.original_filename.force_encoding(Encoding::ASCII_8BIT)
+        body[:resource][:content] = content if content.present?
+      end
 
       body
     end

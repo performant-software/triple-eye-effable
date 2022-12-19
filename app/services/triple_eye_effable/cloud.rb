@@ -106,7 +106,7 @@ module TripleEyeEffable
       if content.present?
         # handle unicode in original_filename
         content.original_filename = content.original_filename.force_encoding(Encoding::ASCII_8BIT)
-        body[:resource][:content] = content if content.present?
+        body[:resource][:content] = content
       end
 
       body

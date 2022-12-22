@@ -25,21 +25,15 @@ module TripleEyeEffable
 
     def create_resource(resourceable)
       response = self.class.post(base_url, body: request_body(resourceable), headers: headers)
-      add_error(resourceable, response) and return unless response.success?
-
-      resource_id, data = parse_response(response)
-      resource_description = ResourceDescription.new(resource_id: resource_id)
-
-      populate_description resource_description, data
-      resourceable.resource_description = resource_description
+      resource_id, = parse_response(response)
+      create_description resourceable, resource_id
     end
 
     def delete_resource(resourceable)
       return if resourceable.resource_description.nil?
 
       id = resourceable.resource_description.resource_id
-      response = self.class.delete("#{base_url}/#{id}", headers: headers)
-      add_error(resourceable, response) unless response.success?
+      self.class.delete("#{base_url}/#{id}", headers: headers)
     end
 
     def load_resource(resourceable)
@@ -47,27 +41,27 @@ module TripleEyeEffable
 
       resource_description = resourceable.resource_description
       response = self.class.get("#{base_url}/#{resource_description.resource_id}")
-      add_error(resourceable, response) and return unless response.success?
-
       resource_id, data = parse_response(response)
-      populate_description resource_description, data
+
+      data&.keys&.each do |key|
+        next unless resource_description.respond_to?("#{key.to_s}=")
+        resource_description.send("#{key.to_s}=", data[key])
+      end
     end
 
     def update_resource(resourceable)
       id = resourceable.resource_description.resource_id
-      response = self.class.put("#{base_url}/#{id}", body: request_body(resourceable), headers: headers)
-      add_error(resourceable, response) unless response.success?
+      self.class.put("#{base_url}/#{id}", body: request_body(resourceable), headers: headers)
     end
 
     private
 
-    def add_error(resourceable, response)
-      message = response['exception'] || response['message']
-      resourceable.errors.add(:base, message)
-    end
-
     def base_url
       "#{@api_url}/public/resources"
+    end
+
+    def create_description(resourceable, resource_id)
+      resourceable.resource_description = ResourceDescription.new(resource_id: resource_id)
     end
 
     def headers
@@ -81,31 +75,19 @@ module TripleEyeEffable
       [data[:uuid], data.except(:uuid)]
     end
 
-    def populate_description(resource_description, data)
-      data&.keys&.each do |key|
-        next unless resource_description.respond_to?("#{key.to_s}=")
-        resource_description.send("#{key.to_s}=", data[key])
-      end
-    end
-
     def request_body(resourceable)
       name = resourceable.name if resourceable.respond_to?(:name)
       content = resourceable.content if resourceable.respond_to?(:content)
-      content_remove = resourceable.content_remove if resourceable.respond_to?(:content_remove)
       metadata = resourceable.metadata if resourceable.respond_to?(:metadata)
 
-      body =       {
+      {
         resource: {
           project_id: @project_id,
           name: name,
+          content: content,
           metadata: metadata
         }
       }
-
-      # Only send content if it's being changed
-      body[:resource][:content] = content if content.present?
-
-      body
     end
   end
 end

@@ -10,6 +10,7 @@ module TripleEyeEffable
       content_url
       content_download_url
       content_iiif_url
+      content_inline_url
       content_preview_url
       content_thumbnail_url
       content_type

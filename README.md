@@ -42,3 +42,13 @@ TripleEyeEffable.configure do |config|
 end
 
 ```
+
+## Resource Transfer
+
+The `triple-eye-effable` gem comes packages with a rake task to assist with managing data. Let's say you want to pull a backup of your application's staging or production environment locally to test. You can easily restore the database, however all of the IIIF resources are still on the staging or production IIIF Cloud instance.
+
+The following rake task will allow for "pulling" the resources and uploading them to another IIIF Cloud instance (either hosted locally, or somewhere else):
+
+```shell
+bundle exec rake triple_eye_effable:transfer_resources -- --api-key <YOUR_API_KEY> --api-url <SOURCE_IIIF_CLOUD_URL> --project-id <YOUR_PROJECT_ID>
+```

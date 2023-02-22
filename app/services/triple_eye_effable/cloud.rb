@@ -47,7 +47,7 @@ module TripleEyeEffable
       return if resourceable.resource_description.nil?
 
       resource_description = resourceable.resource_description
-      response = self.class.get("#{base_url}/#{resource_description.resource_id}")
+      response = self.class.get("#{base_url}/#{resource_description.resource_id}", headers: headers)
       add_error(resourceable, response) and return unless response.success?
 
       resource_id, data = parse_response(response)

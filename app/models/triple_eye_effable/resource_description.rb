@@ -4,6 +4,7 @@ module TripleEyeEffable
     attr_accessor :content_url
     attr_accessor :content_download_url
     attr_accessor :content_iiif_url
+    attr_accessor :content_inline_url
     attr_accessor :content_preview_url
     attr_accessor :content_thumbnail_url
     attr_accessor :content_type

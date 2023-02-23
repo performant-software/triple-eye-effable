@@ -63,7 +63,7 @@ module TripleEyeEffable
     private
 
     def add_error(resourceable, response)
-      message = response['exception'] || response['message']
+      message = response['exception'] || response['message'] || response['errors']
       resourceable.errors.add(:base, message)
     end
 

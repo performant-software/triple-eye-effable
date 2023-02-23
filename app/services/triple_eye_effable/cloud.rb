@@ -92,7 +92,6 @@ module TripleEyeEffable
     def request_body(resourceable)
       name = resourceable.name.force_encoding(Encoding::ASCII_8BIT) if resourceable.respond_to?(:name)
       content = resourceable.content if resourceable.respond_to?(:content)
-      content_remove = resourceable.content_remove if resourceable.respond_to?(:content_remove)
       metadata = resourceable.metadata if resourceable.respond_to?(:metadata)
 
       body =       {

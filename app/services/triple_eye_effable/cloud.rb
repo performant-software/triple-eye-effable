@@ -45,7 +45,8 @@ module TripleEyeEffable
       return if resourceable.resource_description.nil?
 
       id = resourceable.resource_description.resource_id
-      self.class.delete("#{base_url}/#{id}", headers: headers)
+      response = self.class.delete("#{base_url}/#{id}", headers: headers)
+      add_error(resourceable, response) unless response.success?
     end
 
     def load_resource(resourceable)
@@ -72,10 +73,25 @@ module TripleEyeEffable
     def upload_resource(resourceable)
       raise I18n.t('errors.read_only') if @read_only
 
-      self.class.post(base_url, body: request_body(resourceable), headers: headers)
+      response = self.class.get("#{base_url}/#{resource_description.resource_id}", headers: headers)
+      add_error(resourceable, response) and return unless response.success?
+
+      resource_id, data = parse_response(response)
+      populate_description resource_description, data
+    end
+
+    def update_resource(resourceable)
+      id = resourceable.resource_description.resource_id
+      response = self.class.put("#{base_url}/#{id}", body: request_body(resourceable), headers: headers)
+      add_error(resourceable, response) unless response.success?
     end
 
     private
+
+    def add_error(resourceable, response)
+      message = response['exception'] || response['message'] || response['errors']
+      resourceable.errors.add(:base, message)
+    end
 
     def base_url
       "#{@api_url}/public/resources"

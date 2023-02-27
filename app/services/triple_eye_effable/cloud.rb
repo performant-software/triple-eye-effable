@@ -33,6 +33,8 @@ module TripleEyeEffable
       raise I18n.t('errors.read_only') if @read_only
 
       response = upload_resource(resourceable)
+      add_error(resourceable, response) and return unless response.success?
+
       resource_id, data = parse_response(response)
 
       resourceable.resource_description = ResourceDescription.new(resource_id: resource_id)
@@ -54,6 +56,7 @@ module TripleEyeEffable
 
       resource_description = resourceable.resource_description
       response = self.class.get("#{base_url}/#{resource_description.resource_id}", headers: headers)
+      add_error(resourceable, response) and return unless response.success?
 
       resource_id, data = parse_response(response)
       populate_description resource_description, data unless data.nil?
@@ -66,6 +69,8 @@ module TripleEyeEffable
       id = resource_description.resource_id
 
       response = self.class.put("#{base_url}/#{id}", body: request_body(resourceable), headers: headers)
+      add_error(resourceable, response) and return unless response.success?
+
       resource_id, data = parse_response(response)
       populate_description(resource_description, data)
     end
@@ -73,17 +78,7 @@ module TripleEyeEffable
     def upload_resource(resourceable)
       raise I18n.t('errors.read_only') if @read_only
 
-      response = self.class.get("#{base_url}/#{resource_description.resource_id}", headers: headers)
-      add_error(resourceable, response) and return unless response.success?
-
-      resource_id, data = parse_response(response)
-      populate_description resource_description, data
-    end
-
-    def update_resource(resourceable)
-      id = resourceable.resource_description.resource_id
-      response = self.class.put("#{base_url}/#{id}", body: request_body(resourceable), headers: headers)
-      add_error(resourceable, response) unless response.success?
+      self.class.post(base_url, body: request_body(resourceable), headers: headers)
     end
 
     private

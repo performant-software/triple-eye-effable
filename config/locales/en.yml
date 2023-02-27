@@ -1,0 +1,3 @@
+en:
+  errors:
+    read_only: 'This method is not allowed in read-only mode.'

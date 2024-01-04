@@ -4,9 +4,9 @@ module TripleEyeEffable
 
     included do
       index_attributes :content_type, :content_url, :content_download_url, :content_iiif_url, :content_inline_url,
-                       :content_preview_url, :content_thumbnail_url, :manifest
+                       :content_preview_url, :content_thumbnail_url, :manifest, :manifest_url
       show_attributes :content_type, :content_url, :content_download_url, :content_iiif_url, :content_inline_url,
-                      :content_preview_url, :content_thumbnail_url, :manifest
+                      :content_preview_url, :content_thumbnail_url, :manifest, :manifest_url
     end
 
   end

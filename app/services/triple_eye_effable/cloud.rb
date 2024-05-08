@@ -109,7 +109,7 @@ module TripleEyeEffable
     end
 
     def parse_response(response)
-      return nil unless response && response['resource'].present?
+      return [] unless response && response['resource'].present?
 
       data = response['resource'].symbolize_keys.slice(*RESPONSE_KEYS)
       [data[:uuid], data.except(:uuid)]

@@ -38,8 +38,8 @@ module TripleEyeEffable
 
       resource_id, data = parse_response(response)
 
-      resourceable.resource_description = ResourceDescription.new(resource_id: resource_id)
-      populate_description resourceable.resource_description, data
+      resourceable.resource_description = ResourceDescription.new(resource_id: resource_id, content_type: data[:content_type])
+      load_description resourceable.resource_description
     end
 
     def delete_resource(resourceable)
@@ -52,15 +52,27 @@ module TripleEyeEffable
       add_error(resourceable, response) unless response.success?
     end
 
-    def load_resource(resourceable)
-      return if resourceable.resource_description.nil?
+    def download_resource(resourceable)
+      return if resourceable.nil? || resourceable.resource_description.nil?
 
       resource_description = resourceable.resource_description
       response = self.class.get("#{base_url}/#{resource_description.resource_id}", headers: headers)
-      add_error(resourceable, response) and return unless response.success?
 
-      resource_id, data = parse_response(response)
-      populate_description resource_description, data unless data.nil?
+      parse_response(response)
+    end
+
+    def load_description(resource_description)
+      id = resource_description.resource_id
+
+      resource_description.assign_attributes(
+        content_url: "#{base_url}/#{id}/content",
+        content_download_url: "#{base_url}/#{id}/download",
+        content_iiif_url: "#{base_url}/#{id}/iiif",
+        content_inline_url: "#{base_url}/#{id}/inline",
+        content_preview_url: "#{base_url}/#{id}/preview",
+        content_thumbnail_url: "#{base_url}/#{id}/thumbnail",
+        manifest_url: "#{base_url}/#{id}/manifest"
+      )
     end
 
     def update_resource(resourceable)
@@ -72,8 +84,7 @@ module TripleEyeEffable
       response = self.class.put("#{base_url}/#{id}", body: request_body(resourceable), headers: headers)
       add_error(resourceable, response) and return unless response.success?
 
-      resource_id, data = parse_response(response)
-      populate_description(resource_description, data)
+      load_description resource_description
     end
 
     def upload_resource(resourceable)
@@ -102,13 +113,6 @@ module TripleEyeEffable
 
       data = response['resource'].symbolize_keys.slice(*RESPONSE_KEYS)
       [data[:uuid], data.except(:uuid)]
-    end
-
-    def populate_description(resource_description, data)
-      RESPONSE_KEYS.each do |key|
-        next unless resource_description.respond_to?("#{key.to_s}=")
-        resource_description.send("#{key.to_s}=", data[key])
-      end
     end
 
     def request_body(resourceable)

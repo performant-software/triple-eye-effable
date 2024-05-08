@@ -2,6 +2,37 @@ require 'httparty'
 require 'optparse'
 
 namespace :triple_eye_effable do
+  desc 'Sets the content_type attribute on each resource record'
+  task :set_content_type => :environment do
+    service = TripleEyeEffable::Cloud.new(read_only: true)
+
+    # Build the list of classes that include the Resourceable concern
+    classes = []
+
+    Rails.application.eager_load! if Rails.env.development?
+
+    ActiveRecord::Base.descendants.each do |model|
+      next unless model.include?(TripleEyeEffable::Resourceable)
+      classes << model
+    end
+
+    classes.each do |klass|
+      query = klass
+                .joins(:resource_description)
+                .preload(:resource_description)
+                .where(resource_description: { content_type: nil })
+
+      query.find_each do |resourceable|
+        resource_id, data = service.download_resource(resourceable)
+        content_type = data[:content_type]
+
+        next if content_type.nil?
+
+        resource_description = resourceable.resource_description
+        resource_description.update_attribute(:content_type, content_type)
+      end
+    end
+  end
 
   desc 'Transfer resources from one IIIF Cloud instance to another.'
   task :transfer_resources => :environment do
@@ -42,18 +73,14 @@ namespace :triple_eye_effable do
       exit 0
     end
 
-    # Build the list of classes that include the Resourcable concern
+    # Build the list of classes that include the Resourceable concern
     classes = []
 
-    ActiveRecord::Base.connection.tables.each do |table_name|
-      begin
-        klass = table_name.classify.constantize
-        next unless klass.ancestors.include?(TripleEyeEffable::Resourceable)
+    Rails.application.eager_load! if Rails.env.development?
 
-        classes << klass
-      rescue
-        # Skip the record, there's a chance a table exists with no model
-      end
+    ActiveRecord::Base.descendants.each do |model|
+      next unless model.include?(TripleEyeEffable::Resourceable)
+      classes << model
     end
 
     source_service = TripleEyeEffable::Cloud.new(

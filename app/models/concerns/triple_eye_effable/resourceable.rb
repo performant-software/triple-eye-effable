@@ -4,7 +4,7 @@ module TripleEyeEffable
 
     included do
       # Relationships
-      has_one :resource_description, as: :resourceable, dependent: :destroy, class_name: 'TripleEyeEffable::ResourceDescription'
+      has_one :resource_description, as: :resourceable, dependent: :destroy, class_name: ResourceDescription.to_s
 
       # Transient attributes
       attr_accessor :content
@@ -17,11 +17,9 @@ module TripleEyeEffable
       delegate :content_preview_url, to: :resource_description, allow_nil: true
       delegate :content_thumbnail_url, to: :resource_description, allow_nil: true
       delegate :content_type, to: :resource_description, allow_nil: true
-      delegate :manifest, to: :resource_description, allow_nil: true
       delegate :manifest_url, to: :resource_description, allow_nil: true
 
       # Callbacks
-      after_find :load_resource
       before_create :create_resource
       before_destroy :delete_resource
       before_update :update_resource
@@ -38,13 +36,6 @@ module TripleEyeEffable
       def delete_resource
         service = TripleEyeEffable::Cloud.new
         service.delete_resource(self)
-
-        throw(:abort) unless self.errors.empty?
-      end
-
-      def load_resource
-        service = TripleEyeEffable::Cloud.new
-        service.load_resource(self)
 
         throw(:abort) unless self.errors.empty?
       end

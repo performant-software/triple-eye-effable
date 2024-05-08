@@ -24,8 +24,9 @@ namespace :triple_eye_effable do
 
       query.find_each do |resourceable|
         resource_id, data = service.download_resource(resourceable)
-        content_type = data[:content_type]
+        next if data.nil?
 
+        content_type = data[:content_type]
         next if content_type.nil?
 
         resource_description = resourceable.resource_description

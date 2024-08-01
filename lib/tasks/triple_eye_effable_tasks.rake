@@ -6,32 +6,19 @@ namespace :triple_eye_effable do
   task :set_content_type => :environment do
     service = TripleEyeEffable::Cloud.new(read_only: true)
 
-    # Build the list of classes that include the Resourceable concern
-    classes = []
+    query = TripleEyeEffable::ResourceDescription.where(content_type: nil)
 
-    Rails.application.eager_load! if Rails.env.development?
+    query.find_in_batches do |resource_descriptions|
+      content_types = {}
 
-    ActiveRecord::Base.descendants.each do |model|
-      next unless model.include?(TripleEyeEffable::Resourceable)
-      classes << model
-    end
+      resource_descriptions.pluck(:id, :resource_id).each do |id, resource_id|
+        r_id, data = service.get_resource(resource_id)
+        next unless data.present?
 
-    classes.each do |klass|
-      query = klass
-                .joins(:resource_description)
-                .preload(:resource_description)
-                .where(resource_description: { content_type: nil })
-
-      query.find_each do |resourceable|
-        resource_id, data = service.download_resource(resourceable)
-        next if data.nil?
-
-        content_type = data[:content_type]
-        next if content_type.nil?
-
-        resource_description = resourceable.resource_description
-        resource_description.update_attribute(:content_type, content_type)
+        content_types[id] = { content_type: data[:content_type] }
       end
+
+      TripleEyeEffable::ResourceDescription.update(content_types.keys, content_types.values)
     end
   end
 

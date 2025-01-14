@@ -13,6 +13,7 @@ module TripleEyeEffable
       delegate :content_url, to: :resource_description, allow_nil: true
       delegate :content_download_url, to: :resource_description, allow_nil: true
       delegate :content_iiif_url, to: :resource_description, allow_nil: true
+      delegate :content_info_url, to: :resource_description, allow_nil: true
       delegate :content_inline_url, to: :resource_description, allow_nil: true
       delegate :content_preview_url, to: :resource_description, allow_nil: true
       delegate :content_thumbnail_url, to: :resource_description, allow_nil: true

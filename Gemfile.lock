@@ -3,7 +3,7 @@ PATH
   specs:
     triple_eye_effable (0.1.0)
       httparty (~> 0.20.0)
-      rails (>= 6.0.3.2, < 8)
+      rails (>= 6.0.3.2, < 9)
 
 GEM
   remote: https://rubygems.org/

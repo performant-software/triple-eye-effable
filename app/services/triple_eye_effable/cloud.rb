@@ -127,12 +127,14 @@ module TripleEyeEffable
       name = self.class.filename(resourceable.name) if resourceable.respond_to?(:name)
       content = resourceable.content if resourceable.respond_to?(:content)
       metadata = resourceable.metadata if resourceable.respond_to?(:metadata)
+      storage_key = resourceable.storage_key if resourceable.respond_to?(:storage_key)
 
       body = {
         resource: {
           project_id: @project_id,
-          name: name,
-          metadata: metadata
+          name:,
+          metadata:,
+          storage_key:
         }
       }
 

@@ -79,6 +79,14 @@ module TripleEyeEffable
       )
     end
 
+    def save_resource(resourceable)
+      if resourceable.resource_description.present?
+        update_resource resourceable
+      else
+        create_resource resourceable
+      end
+    end
+
     def update_resource(resourceable)
       raise I18n.t('errors.read_only') if @read_only
 

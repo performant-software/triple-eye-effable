@@ -10,6 +10,7 @@ module TripleEyeEffable
       content_url
       content_download_url
       content_iiif_url
+      content_info_url
       content_inline_url
       content_preview_url
       content_thumbnail_url
@@ -72,6 +73,7 @@ module TripleEyeEffable
         content_url: "#{base_url}/#{id}/content",
         content_download_url: "#{base_url}/#{id}/download",
         content_iiif_url: "#{base_url}/#{id}/iiif",
+        content_info_url: "#{base_url}/#{id}/info",
         content_inline_url: "#{base_url}/#{id}/inline",
         content_preview_url: "#{base_url}/#{id}/preview",
         content_thumbnail_url: "#{base_url}/#{id}/thumbnail",

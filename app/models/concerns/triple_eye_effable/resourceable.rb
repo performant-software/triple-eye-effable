@@ -21,18 +21,11 @@ module TripleEyeEffable
       delegate :manifest_url, to: :resource_description, allow_nil: true
 
       # Callbacks
-      before_create :create_resource
+      before_create :save_resource
       before_destroy :delete_resource
-      before_update :update_resource
+      before_update :save_resource
 
       private
-
-      def create_resource
-        service = TripleEyeEffable::Cloud.new
-        service.create_resource(self)
-
-        throw(:abort) unless self.errors.empty?
-      end
 
       def delete_resource
         service = TripleEyeEffable::Cloud.new
@@ -41,9 +34,9 @@ module TripleEyeEffable
         throw(:abort) unless self.errors.empty?
       end
 
-      def update_resource
+      def save_resource
         service = TripleEyeEffable::Cloud.new
-        service.update_resource(self)
+        service.save_resource(self)
 
         throw(:abort) unless self.errors.empty?
       end

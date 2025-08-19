@@ -150,8 +150,12 @@ module TripleEyeEffable
 
       # Only send content if it's being changed
       if content.present?
-        # handle unicode in original_filename
-        content.original_filename = content.original_filename.force_encoding(Encoding::ASCII_8BIT)
+        # Handle unicode in original_filename
+        if content.respond_to?(:original_filename)
+          content.original_filename = content.original_filename.force_encoding(Encoding::ASCII_8BIT)
+        end
+
+        # Append the content to the body
         body[:resource][:content] = content
       end
 

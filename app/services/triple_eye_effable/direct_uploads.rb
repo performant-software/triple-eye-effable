@@ -19,7 +19,7 @@ module TripleEyeEffable
     private
 
     def headers
-      { 'X-API-KEY' => api_key }
+      { 'X-API-KEY': api_key }
     end
 
   end

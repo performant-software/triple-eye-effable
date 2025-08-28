@@ -1,4 +1,4 @@
 module TripleEyeEffable
-  class ApplicationController < ActionController::Base
+  class ApplicationController < TripleEyeEffable.config.base_controller_class.constantize
   end
 end

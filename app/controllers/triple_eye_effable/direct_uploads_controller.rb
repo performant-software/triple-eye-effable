@@ -15,6 +15,8 @@ module TripleEyeEffable
     end
 
     def set_metadata
+      return unless request.headers['X-STORAGE-KEY'].present?
+
       params[:blob][:metadata] ||= {}
       params[:blob][:metadata][:storage_key] = request.headers['X-STORAGE-KEY']
     end

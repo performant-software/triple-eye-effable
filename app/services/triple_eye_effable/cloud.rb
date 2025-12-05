@@ -21,7 +21,7 @@ module TripleEyeEffable
     )
 
     def self.filename(name)
-      name&.force_encoding(Encoding::ASCII_8BIT)
+      name&.dup&.force_encoding(Encoding::ASCII_8BIT)
     end
 
     def initialize(api_key: nil, api_url: nil, project_id: nil, read_only: false)
@@ -134,7 +134,7 @@ module TripleEyeEffable
     end
 
     def request_body(resourceable)
-      name = self.class.filename(resourceable.name) if resourceable.respond_to?(:name)
+      name = resourceable.name if resourceable.respond_to?(:name)
       content = resourceable.content if resourceable.respond_to?(:content)
       metadata = resourceable.metadata if resourceable.respond_to?(:metadata)
       storage_key = resourceable.storage_key if resourceable.respond_to?(:storage_key)
@@ -152,7 +152,7 @@ module TripleEyeEffable
       if content.present?
         # Handle unicode in original_filename
         if content.respond_to?(:original_filename)
-          content.original_filename = content.original_filename.force_encoding(Encoding::ASCII_8BIT)
+          content.original_filename = self.class.filename(content.original_filename)
         end
 
         # Append the content to the body

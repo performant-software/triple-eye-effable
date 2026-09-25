@@ -62,6 +62,26 @@ module TripleEyeEffable
       parse_response(response)
     end
 
+    # Queues static asset generation on the IIIF Cloud instance for the passed resource IDs.
+    # `base_url`/`destination` are forwarded as-is to IIIF Cloud's endpoint.
+    def create_static_assets(resource_ids:, base_url:, destination:)
+      self.class.post(
+        "#{@api_url}/public/resources/create_static_assets",
+        body: { resource_ids: resource_ids, base_url: base_url, destination: destination },
+        headers: headers
+      )
+    end
+
+    # Persists an already-built manifest/collection JSON document on the IIIF Cloud instance, at
+    # path under destination.
+    def create_static_manifest(destination:, path:, manifest:)
+      self.class.post(
+        "#{@api_url}/public/static_manifests",
+        body: { destination: destination, path: path, manifest: manifest },
+        headers: headers
+      )
+    end
+
     def get_resource(resource_id)
       self.class.get("#{base_url}/#{resource_id}", headers: headers)
     end

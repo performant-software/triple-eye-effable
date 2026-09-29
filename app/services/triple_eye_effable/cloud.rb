@@ -70,7 +70,7 @@ module TripleEyeEffable
       response = self.class.post(
         "#{@api_url}/public/resources/create_static_assets",
         body: { resource_ids: resource_ids, base_url: base_url, destination: destination }.to_json,
-        headers: headers
+        headers: headers.merge('Content-Type' => 'application/json')
       )
 
       return response if response.success?
@@ -85,7 +85,7 @@ module TripleEyeEffable
       response = self.class.post(
         "#{@api_url}/public/static_manifests",
         body: { destination: destination, path: path, manifest: manifest }.to_json,
-        headers: headers
+        headers: headers.merge('Content-Type' => 'application/json')
       )
 
       return response if response.success?

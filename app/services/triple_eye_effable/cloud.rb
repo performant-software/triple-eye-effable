@@ -67,7 +67,7 @@ module TripleEyeEffable
     def create_static_assets(resource_ids:, base_url:, destination:)
       self.class.post(
         "#{@api_url}/public/resources/create_static_assets",
-        body: { resource_ids: resource_ids, base_url: base_url, destination: destination },
+        body: { resource_ids: resource_ids, base_url: base_url, destination: destination }.to_json,
         headers: headers
       )
     end

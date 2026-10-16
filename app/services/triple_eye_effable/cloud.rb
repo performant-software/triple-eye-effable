@@ -71,12 +71,23 @@ module TripleEyeEffable
     # core-data-cloud's GenerateStaticAssetsJob) can pass the same uuid on every call and have
     # IIIF Cloud accumulate them under one trackable Job; generate one with SecureRandom.uuid
     # before the first call. Poll completion with #job_status.
-    def create_static_assets(resource_ids:, base_url:, destination:, job_uuid:)
+    #
+    # storage is required - IIIF Cloud no longer has any environment-configured fallback and
+    # will reject the request without it. It must include :bucket, :access_key_id, and
+    # :secret_access_key, and may optionally include :session_token for short-lived credentials.
+    # The storage endpoint/region are fixed server-side on IIIF Cloud and cannot be set here.
+    def create_static_assets(resource_ids:, base_url:, destination:, job_uuid:, storage:)
       raise I18n.t('errors.read_only') if @read_only
 
       response = self.class.post(
         "#{@api_url}/public/resources/create_static_assets",
-        body: { resource_ids: resource_ids, base_url: base_url, destination: destination, job_uuid: job_uuid }.to_json,
+        body: {
+          resource_ids: resource_ids,
+          base_url: base_url,
+          destination: destination,
+          job_uuid: job_uuid,
+          storage: storage
+        }.to_json,
         headers: headers.merge('Content-Type' => 'application/json'),
         timeout: 600
       )

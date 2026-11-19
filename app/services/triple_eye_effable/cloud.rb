@@ -64,27 +64,34 @@ module TripleEyeEffable
 
     # Queues static asset generation on the IIIF Cloud instance for the passed resource IDs.
     # `base_url`/`destination` are forwarded as-is to IIIF Cloud's endpoint.
-    def create_static_assets(resource_ids:, base_url:, destination:)
+    #
+    # job_uuid is required so callers that split work into multiple batches (e.g.
+    # core-data-cloud's GenerateStaticAssetsJob) can pass the same uuid on every call and have
+    # IIIF Cloud accumulate them under one trackable Job; generate one with SecureRandom.uuid
+    # before the first call. Poll completion with #job_status.
+    #
+    # IIIF Cloud ties a job_uuid to the API key (i.e. the user) that first created it, to
+    # prevent unrelated callers from colliding on a reused/guessed uuid - so every batch sharing
+    # one job_uuid must go out under the same API key (e.g. via one reused Cloud instance, as
+    # GenerateStaticAssetsJob already does). Reusing a job_uuid under a different API key is
+    # rejected with a 403, surfaced here as a raised error like any other non-success response.
+    #
+    # storage is required - IIIF Cloud no longer has any environment-configured fallback and
+    # will reject the request without it. It must include :bucket, :access_key_id, and
+    # :secret_access_key, and may optionally include :session_token for short-lived credentials.
+    # The storage endpoint/region are fixed server-side on IIIF Cloud and cannot be set here.
+    def create_static_assets(resource_ids:, base_url:, destination:, job_uuid:, storage:)
       raise I18n.t('errors.read_only') if @read_only
 
       response = self.class.post(
         "#{@api_url}/public/resources/create_static_assets",
-        body: { resource_ids: resource_ids, base_url: base_url, destination: destination }.to_json,
-        headers: headers.merge('Content-Type' => 'application/json')
-      )
-
-      return response if response.success?
-      raise "IIIF Cloud request failed (#{response.code}): #{response.body}"
-    end
-
-    # Persists an already-built manifest/collection JSON document on the IIIF Cloud instance, at
-    # path under destination.
-    def create_static_manifest(destination:, path:, manifest:)
-      raise I18n.t('errors.read_only') if @read_only
-
-      response = self.class.post(
-        "#{@api_url}/public/static_manifests",
-        body: { destination: destination, path: path, manifest: manifest }.to_json,
+        body: {
+          resource_ids: resource_ids,
+          base_url: base_url,
+          destination: destination,
+          job_uuid: job_uuid,
+          storage: storage
+        }.to_json,
         headers: headers.merge('Content-Type' => 'application/json')
       )
 
@@ -94,6 +101,18 @@ module TripleEyeEffable
 
     def get_resource(resource_id)
       self.class.get("#{base_url}/#{resource_id}", headers: headers)
+    end
+
+    # Fetches the current status of a Job (e.g. one returned by #create_static_assets) as a
+    # symbolized hash: { status:, total_count:, completed_count:, failed_count: }. Raises on any
+    # non-success response (including a 404 for an unknown uuid) - callers polling for completion
+    # should treat a raised error as "not done yet" up to their own retry/attempt limit.
+    def job_status(uuid)
+      response = self.class.get("#{@api_url}/public/jobs/#{uuid}", headers: headers)
+
+      raise "IIIF Cloud request failed (#{response.code}): #{response.body}" unless response.success?
+
+      response.parsed_response.symbolize_keys
     end
 
     def load_description(resource_description)
